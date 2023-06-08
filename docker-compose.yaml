@@ -1,0 +1,70 @@
+version: '1.0'
+services:
+  gitlab:
+    #image: 'gitlab/gitlab-ee:latest'
+    build:
+      context: gitlab/
+      dockerfile: Dockerfile
+    image: "pmnaac-gitlab"
+    restart: always
+    hostname: 'gitlab.hausahyrax.com'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://gitlab.example.com'
+        # Add any other gitlab.rb configuration here, each on its own line
+    ports:
+      - "80:80"
+      - "443:443"
+      - "22:22"
+    volumes:
+      - "gitlab-config:/etc/gitlab"
+      - "gitlab-logs:/var/log/gitlab"
+      - "gitlab-data:/var/opt/gitlab"
+    shm_size: '256m'
+  
+  gitea:
+    build:
+      context: gitea/
+      dockerfile: Dockerfile
+    image: "pmnaac-gitea"
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    restart: always
+    volumes:
+      - ./gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3000:3000"
+      - "222:22"
+
+  jenkins:
+    build:
+      context: jenkins/
+      dockerfile: Dockerfile
+    image: "pmnaac-jenkins"
+    restart: always
+    volumes:
+      - jenkins-home:/var/jenkins_home:z
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /run/netns:/run/nets
+    ports:
+      - "8080:8080"
+      - "2736:2736"
+
+  # networks:
+  #   net1:
+  #   name: pmnaac-network
+
+  # UEaLDlHuFc5wq6Lm3xfoFJPqyBDQ8k4rH8ThlQ7rw4M
+
+volumes:
+  gitlab-config:
+    driver: local
+  gitlab-logs:
+    driver: local
+  gitlab-data:
+    driver: local
+  jenkins-home:
+    driver: local
